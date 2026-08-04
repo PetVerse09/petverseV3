@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import BootScene from "./scenes/BootScene";
 
 export class Game extends Phaser.Game {
   constructor() {
@@ -14,7 +15,7 @@ export class Game extends Phaser.Game {
           debug: false
         }
       },
-      scene: []
+      scene: [BootScene]
     });
   }
 }
