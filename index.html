@@ -1,21 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>Alberto PiPet</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetVerse V3</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <meta name="theme-color" content="#4CAF50">
-    <meta name="description" content="PetVerse V3 - Adventure • Breeding • Marketplace">
+    <style>
+        body { 
+            text-align: center; 
+            background: #FFE4B5; 
+            font-family: Arial;
+            margin: 0;
+        }
+        .tabs { display: flex; background: #FF6B6B; }
+        .tab { 
+            flex: 1; padding: 15px; color: white; 
+            cursor: pointer; font-weight: bold;
+        }
+        .tab.active { background: #FF4444; }
+        .page { display: none; padding: 20px; }
+        .page.active { display: block; }
+        
+        #pet {
+            width: 200px; height: 200px; margin: 20px auto;
+            background: url('https://i.imgur.com/8Km2L5w.png') center/cover;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-15px);} }
+        
+        button {
+            padding: 15px 30px; font-size: 18px; background: #FF6B6B;
+            color: white; border: none; border-radius: 10px;
+            cursor: pointer; margin: 10px;
+        }
+        .item {
+            background: white; padding: 15px; margin: 10px;
+            border-radius: 10px; display: inline-block; width: 150px;
+        }
+        #stats { font-size: 20px; margin: 15px; }
+    </style>
 </head>
-
 <body>
+    <h1>🐱 Alberto PiPet 🐱</h1>
+    
+    <!-- TABS -->
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('home')">🏠 Home</div>
+        <div class="tab" onclick="showTab('adventure')">⚔️ Adventure</div>
+        <div class="tab" onclick="showTab('shop')">🛒 Shop</div>
+    </div>
 
-<div id="game"></div>
+    <!-- HOME PAGE -->
+    <div id="home" class="page active">
+        <div id="pet"></div>
+        <div id="stats">
+            Gutom: <span id="hunger">50</span>%<br>
+            Saya: <span id="happy">50</span>%
+        </div>
+        <button onclick="feedPet()">🍖 Pakain - 1 Pi</button>
+    </div>
 
-<script type="module" src="/src/main.ts"></script>
+    <!-- ADVENTURE PAGE -->
+    <div id="adventure" class="page">
+        <h2>Padala si PiPet sa Adventure!</h2>
+        <p>Kikita ng 0.5 Pi after 30 seconds</p>
+        <button onclick="startAdventure()">⚔️ Start Adventure</button>
+        <p id="adventure-status"></p>
+    </div>
 
-</body>
-</html>
+    <!-- SHOP PAGE -->
+    <div id="shop" class="page">
+        <h2>PiPet Shop</h2>
+        <div class="item">
+            <h3>🍖 Pagkain</h3>
+            <p>+30 Gutom</p>
+            <button onclick="buyItem('food', 1)">Bili - 1 Pi</button>
+        </div>
+        <div class="item">
+            <h3>⚽ Laruan</h3>
+            <p>+30 Saya</p>
+            <button onclick="buyItem('toy', 2)">Bili - 2 Pi</button>
+        </div>
+        <div class="item">
+            <h3>🎩 Hat</h3>
+            <p>Palit itsura</p>
+            <button onclick="buyItem('hat', 3)">Bili - 3 Pi</button>
+        </div>
+    </div>
+
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        let hunger = 50;
+        let happy = 50;
+        
+        Pi.init({ version: "2.0", sandbox: true });
+
+        function showTab(tab) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateStats() {
+            document.getElementById('hunger').innerText = hunger;
+            document.getElementById('happy').innerText = happy;
+        }
+
+        function makePayment(amount, memo, callback) {
+            Pi.createPayment({ amount, memo, metadata: {} }, {
+                onReadyForServerApproval: (id) => {
+                    fetch('https://alberto-pipet.onrender.com/approve', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ paymentId: id })
+                    });
+                },
+                onReadyForServerCompletion: (id, txid) => {
+                    fetch('https://alberto-pipet.onrender.com/complete', {
+                        method: 'POST', headers:
